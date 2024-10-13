@@ -1,2 +1,2 @@
-# LeanTeX
-An attempt to make (La)TeX work together with LEAN
+# MathTeX
+An attempt to write an intuative theorem prover that works with (La)TeX.
