@@ -1,24 +1,50 @@
 #include <functional>
 #include "Predicate.h"
+#include "State.h"
+#include <iostream>
 
 namespace MathTeXlib::Logic
 {
-	bool Predicate::Evaluate() const
+	State Predicate::Evaluate() const
 	{ 
 		return EvaluationFunction();
 	}
 			
-	Predicate const& Predicate::operator|(Predicate const& righthand) 
+	Predicate Predicate::operator|(Predicate const& righthand) const
 	{
-		std::function<bool()> oldEvaluationFunction = EvaluationFunction;
-		EvaluationFunction = std::function<bool()> { [oldEvaluationFunction,righthand]() {return oldEvaluationFunction() || righthand.EvaluationFunction();}};
-		return *this;
+		std::function<State()> oldEvaluationFunction = EvaluationFunction;
+		Predicate ret { std::function<State()> { [oldEvaluationFunction,righthand]() {return oldEvaluationFunction() || righthand.EvaluationFunction();}}};
+		return ret;
 	}
 	
-	Predicate const& Predicate::operator&(Predicate const& righthand) 
+	Predicate Predicate::operator&(Predicate const& righthand) const
 	{
-		std::function<bool()> oldEvaluationFunction = EvaluationFunction;
-		EvaluationFunction = std::function<bool()>{[oldEvaluationFunction,righthand](){return oldEvaluationFunction() && righthand.EvaluationFunction();}};
-		return *this;
+		std::function<State()> oldEvaluationFunction = EvaluationFunction;
+		Predicate ret{ std::function<State()>{[oldEvaluationFunction,righthand](){return oldEvaluationFunction() && righthand.EvaluationFunction();}}};
+		return ret;
 	}
+
+	Predicate Predicate::operator!() const
+	{
+		std::function<State()> oldEvaluationFunction = EvaluationFunction;
+		Predicate ret { std::function<State()>{[oldEvaluationFunction](){return !oldEvaluationFunction();}}};
+		return ret;
+	}
+
+	Predicate Predicate::operator>>(Predicate const& righthand) const
+	{
+		std::function<State()> oldEvaluationFunction = EvaluationFunction;
+		Predicate ret {std::function<State()>{[oldEvaluationFunction,righthand]()
+			{return oldEvaluationFunction()>>righthand.EvaluationFunction(); }}};
+		return ret;
+	}
+
+	Predicate Predicate::operator<<(Predicate const& righthand) const
+	{
+		std::function<State()> oldEvaluationFunction = EvaluationFunction;
+		Predicate ret {std::function<State()>{[oldEvaluationFunction,righthand]()
+			{return oldEvaluationFunction()<<righthand.EvaluationFunction(); }}};
+		return ret;
+	}
+
 }

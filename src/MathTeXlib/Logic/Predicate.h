@@ -1,17 +1,21 @@
 #pragma once
 #include <functional>
+#include "State.h"
 
 namespace MathTeXlib::Logic
 {
 	class Predicate
 	{
 		private:
-			std::function<bool()> EvaluationFunction;
+			std::function<State()> EvaluationFunction;
 		public:
-			Predicate(std::function<bool()> evaluationFunction) : EvaluationFunction {evaluationFunction} {}
-			bool Evaluate() const;
-			Predicate const& operator | (Predicate const& righthand);
-			Predicate const& operator & (Predicate const& righthand); 
+			Predicate(std::function<State()> evaluationFunction) : EvaluationFunction {evaluationFunction} {}
+			State Evaluate() const;
+			Predicate operator|(Predicate const& righthand) const;
+			Predicate operator&(Predicate const& righthand) const;
+			Predicate operator>>(Predicate const& righthand) const;
+			Predicate operator<<(Predicate const& righthand) const;
+			Predicate operator!() const;
 			virtual ~Predicate() {}
 	};
 }
