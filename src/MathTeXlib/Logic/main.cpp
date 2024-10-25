@@ -59,6 +59,5 @@ int main(void)
 	std::cout<<"Checking falseValue   << unknownValue: "<<(falseValue<<unknownValue).Evaluate()<<"\n";
 	std::cout<<"Checking unknownValue << unknownValue: " <<(unknownValue<<unknownValue).Evaluate()<<"\n";
 
-	
 	return 0;
 }
