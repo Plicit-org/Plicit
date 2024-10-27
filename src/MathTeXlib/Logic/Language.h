@@ -1,5 +1,6 @@
 #pragma once
 
+#include<concepts>
 #include<stdexcept>
 #include<map>
 #include<set>
@@ -9,30 +10,45 @@
 
 namespace MathTeXlib::Logic
 {
+	
 	class Language
 	{
+		
 		protected:
 			class Object
 			{
+				public:
+					enum class ObjectType
+					{
+						INVALID,
+						CONSTANT,
+						VARIABLE,
+						FUNCTION,
+						RELATION,
+						CONNECTIVE,
+						QUANTIFIER
+					};
+					Object(std::string name, ObjectType typeOfObject) : Name{ name }, TypeOfObject { typeOfObject } {}
+					std::string GetName() const { return Name; }
+					ObjectType GetType() { return TypeOfObject; }
+
 				private:
 					std::string Name;
-				public:
-					Object(std::string name) : Name{name}{}
-					std::string GetName() const { return Name; }
+					ObjectType TypeOfObject;
 			};
 
-			class Constant : public Object
+			class Constant : public MathTeXlib::Logic::Language::Object
 			{
 				public:
-					Constant() : MathTeXlib::Logic::Language::Object { "" } {}
-					Constant(std::string name) : MathTeXlib::Logic::Language::Object{name} {}
+					Constant() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID } {}
+					Constant(std::string name) : MathTeXlib::Logic::Language::Object{ name, ObjectType::CONSTANT } {}
 			};
 
 			class Variable : public MathTeXlib::Logic::Language::Object
 			{
 				public:
-					Variable(std::string name) : MathTeXlib::Logic::Language::Object {name} {}
-					Variable() : MathTeXlib::Logic::Language::Object { "" } {}
+					Variable(std::string name) : MathTeXlib::Logic::Language::Object { name, ObjectType::VARIABLE } {}
+					Variable() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID } {}
 			};
 
 			class Function : public MathTeXlib::Logic::Language::Object
@@ -40,10 +56,10 @@ namespace MathTeXlib::Logic
 				private:
 					unsigned int Size;
 				public:
-					Function() : MathTeXlib::Logic::Language::Object { "" }, Size { 0 } {}
-					Function(std::string name, unsigned int size) : MathTeXlib::Logic::Language::Object { name },
-						Size { size } {}
-					unsigned int GetSize() { return Size; }
+					Function() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID }, Size { 0 } {}
+					Function(std::string name, unsigned int size) : Size { size },
+						MathTeXlib::Logic::Language::Object { name, ObjectType::FUNCTION } {}
+					unsigned int GetSize() const { return Size; }
 			};
 
 
@@ -73,11 +89,35 @@ namespace MathTeXlib::Logic
 				private:
 					unsigned int Size;
 				public:
-					Relation() : MathTeXlib::Logic::Language::Object { "" } {}
-					Relation(std::string name, unsigned int size) : MathTeXlib::Logic::Language::Object { name }, 
-						Size { size } {}
-					unsigned int GetSize() { return Size; }
+					Relation() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID }, Size { 0 } {}
+					Relation(std::string name, unsigned int size) : Size { size },
+						MathTeXlib::Logic::Language::Object { name, ObjectType::RELATION } {}
+					unsigned int GetSize() const { return Size; }
 			};
+
+			class Connective : public MathTeXlib::Logic::Language::Object
+			{
+				private:
+					unsigned int Size;
+				public:
+					Connective() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID }, Size { 0 } {}
+					Connective(std::string name, unsigned int size) : Size { size },
+						MathTeXlib::Logic::Language::Object { name, ObjectType::CONNECTIVE } {}
+					unsigned int GetSize() const { return Size; }
+			};
+
+			class Quantifier : public MathTeXlib::Logic::Language::Object
+			{
+				public:
+					Quantifier() : MathTeXlib::Logic::Language::Object { "", ObjectType::INVALID } {}
+					Quantifier(std::string name) : MathTeXlib::Logic::Language::Object { name, ObjectType::QUANTIFIER } {}
+			};
+		
+			void AddConstant(MathTeXlib::Logic::Language::Constant constant) { AddObject(constant, Constants); }
+			void AddFunction(MathTeXlib::Logic::Language::Function function) { AddObject(function, Functions); }
+			void AddRelation(MathTeXlib::Logic::Language::Relation relation) { AddObject(relation, Relations); }
+			void AddConnective(MathTeXlib::Logic::Language::Connective connective) { AddObject(connective, Connectives); }
+			void AddQuantifier(MathTeXlib::Logic::Language::Quantifier quantifier) { AddObject(quantifier, Quantifiers); }
 
 		private:
 			std::set<std::string> Names;
@@ -85,15 +125,17 @@ namespace MathTeXlib::Logic
 			std::map<std::string, MathTeXlib::Logic::Language::Variable> Variables;
 			std::map<std::string, MathTeXlib::Logic::Language::Function> Functions;
 			std::map<std::string, MathTeXlib::Logic::Language::Relation> Relations;
-		
-			void AddConstant(MathTeXlib::Logic::Language::Constant constant);
-			void AddFunction(MathTeXlib::Logic::Language::Function function);
-			void AddRelation(MathTeXlib::Logic::Language::Relation relation);
+			std::map<std::string, MathTeXlib::Logic::Language::Connective> Connectives;
+			std::map<std::string, MathTeXlib::Logic::Language::Quantifier> Quantifiers;
+			template<typename T> 
+			void AddObject(T object, std::map<std::string, T> collection ) requires std::is_base_of_v<Object, T>;
 
 		public:
 			MathTeXlib::Logic::Language::Constant GetConstant(std::string const& name) const;
 			MathTeXlib::Logic::Language::Variable GetVariable(std::string const& name);
 			MathTeXlib::Logic::Language::Function GetFunction(std::string const& name) const;
 			MathTeXlib::Logic::Language::Relation GetRelation(std::string const& name) const;
+			MathTeXlib::Logic::Language::Connective GetConnective(std::string const& name) const;
+			MathTeXlib::Logic::Language::Quantifier GetQuantifier(std::string const& name) const;
 	};
 }

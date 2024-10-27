@@ -1,6 +1,7 @@
 #include<string>
 #include<stdexcept>
 #include<vector>
+#include<concepts>
 #include "Language.h"
 
 namespace MathTeXlib::Logic
@@ -14,10 +15,8 @@ namespace MathTeXlib::Logic
 	MathTeXlib::Logic::Language::Variable Language::GetVariable(std::string const& name)
 	{
 		if(Variables.contains(name) == true) return Variables.at(name);
-		if(Names.contains(name) == true) throw std::invalid_argument("Invalid variable name there is already an object named " + name);
-		Names.insert(name);
 		Variable addVariable { name };
-		Variables[name] = addVariable;
+		AddObject(addVariable, Variables);
 		return addVariable;
 	}
 	
@@ -32,47 +31,17 @@ namespace MathTeXlib::Logic
 		if(Relations.contains(name) == true) return Relations.at(name);
 		throw std::invalid_argument("Unknown relation " + name);
 	}
-	
-	void Language::AddConstant(MathTeXlib::Logic::Language::Constant constant)
-	{
-		if(Names.contains(constant.GetName()) == true)
-		{
-			throw std::invalid_argument("Invalid constant name " + constant.GetName() + 
-				" there is already an object in this language with this name.");
-		}
-		else
-		{
-			Names.insert(constant.GetName());
-			Constants[constant.GetName()] = constant;
-		}
-	}
 
-	void Language::AddFunction(MathTeXlib::Logic::Language::Function function)
+	template<typename T> void Language::AddObject(T object, std::map<std::string, T> collection) 
+		requires std::is_base_of_v<Object, T>
 	{
-		if(Names.contains(function.GetName()) == true)
+		if(Names.contains(object.GetName()) == true)
 		{
-			throw std::invalid_argument("Invalid function name " + function.GetName() + 
+			throw std::invalid_argument("Invalid object name " + object.GetName() + 
 				" there is already an object in this language with this name.");
 		}
-		else
-		{
-			Names.insert(function.GetName());
-			Functions[function.GetName()] = function;
-		}
-	}
-
-	void Language::AddRelation(MathTeXlib::Logic::Language::Relation relation)
-	{
-		if(Names.contains(relation.GetName()) == true)
-		{
-			throw std::invalid_argument("Invalid relation name " + relation.GetName() + 
-				" there is already an object in this language with this name.");
-		}
-		else
-		{
-			Names.insert(relation.GetName());
-			Relations[relation.GetName()] = relation;
-		}
+		Names.insert(object.GetName());
+		collection[object.GetName()] = object;
 	}
 
 	Language::Term::Term(MathTeXlib::Logic::Language::Function value, 
